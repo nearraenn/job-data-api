@@ -1,4 +1,4 @@
-package com.ata.jobdata.web;
+package com.ata.jobdata.controller;
 
 import com.ata.jobdata.query.JobField;
 import com.ata.jobdata.query.QueryParams;

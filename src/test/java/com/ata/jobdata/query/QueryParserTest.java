@@ -1,5 +1,6 @@
 package com.ata.jobdata.query;
 
+import com.ata.jobdata.exception.ApiException;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;

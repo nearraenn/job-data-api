@@ -1,5 +1,7 @@
 package com.ata.jobdata.query;
 
+import com.ata.jobdata.exception.ApiException;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 

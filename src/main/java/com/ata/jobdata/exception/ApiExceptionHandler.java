@@ -1,6 +1,5 @@
-package com.ata.jobdata.web;
+package com.ata.jobdata.exception;
 
-import com.ata.jobdata.query.ApiException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

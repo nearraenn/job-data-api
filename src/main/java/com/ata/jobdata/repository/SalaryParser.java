@@ -1,4 +1,4 @@
-package com.ata.jobdata.data;
+package com.ata.jobdata.repository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

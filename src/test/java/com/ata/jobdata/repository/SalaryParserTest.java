@@ -1,4 +1,4 @@
-package com.ata.jobdata.data;
+package com.ata.jobdata.repository;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

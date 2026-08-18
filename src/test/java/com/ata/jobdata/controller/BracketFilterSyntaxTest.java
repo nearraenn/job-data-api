@@ -1,4 +1,4 @@
-package com.ata.jobdata.web;
+package com.ata.jobdata.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

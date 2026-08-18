@@ -1,6 +1,6 @@
-package com.ata.jobdata.data;
+package com.ata.jobdata.repository;
 
-import com.ata.jobdata.domain.JobRecord;
+import com.ata.jobdata.model.JobRecord;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;

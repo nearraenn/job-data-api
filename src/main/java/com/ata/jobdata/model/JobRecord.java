@@ -1,4 +1,4 @@
-package com.ata.jobdata.domain;
+package com.ata.jobdata.model;
 
 /**
  * One survey row after normalisation. Every field is nullable — the source is a public survey where

@@ -1,11 +1,11 @@
 package com.ata.jobdata.service;
 
-import com.ata.jobdata.data.JobDataRepository;
-import com.ata.jobdata.domain.JobRecord;
-import com.ata.jobdata.query.ApiException;
+import com.ata.jobdata.controller.JobDataResponse;
+import com.ata.jobdata.exception.ApiException;
+import com.ata.jobdata.model.JobRecord;
 import com.ata.jobdata.query.JobField;
 import com.ata.jobdata.query.QueryParams;
-import com.ata.jobdata.web.JobDataResponse;
+import com.ata.jobdata.repository.JobDataRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;

@@ -1,6 +1,6 @@
-package com.ata.jobdata.data;
+package com.ata.jobdata.repository;
 
-import com.ata.jobdata.domain.JobRecord;
+import com.ata.jobdata.model.JobRecord;
 
 import java.util.List;
 import java.util.Optional;

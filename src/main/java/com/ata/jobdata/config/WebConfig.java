@@ -1,4 +1,4 @@
-package com.ata.jobdata.web;
+package com.ata.jobdata.config;
 
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;

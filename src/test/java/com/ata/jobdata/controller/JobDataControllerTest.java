@@ -1,4 +1,4 @@
-package com.ata.jobdata.web;
+package com.ata.jobdata.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

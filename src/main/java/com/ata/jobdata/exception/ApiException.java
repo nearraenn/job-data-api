@@ -1,4 +1,4 @@
-package com.ata.jobdata.query;
+package com.ata.jobdata.exception;
 
 import org.springframework.http.HttpStatus;
 

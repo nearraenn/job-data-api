@@ -1,6 +1,7 @@
 package com.ata.jobdata.query;
 
-import com.ata.jobdata.domain.JobRecord;
+import com.ata.jobdata.exception.ApiException;
+import com.ata.jobdata.model.JobRecord;
 
 import java.util.Arrays;
 import java.util.Comparator;

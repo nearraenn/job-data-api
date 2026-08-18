@@ -163,12 +163,17 @@ BracketFilterSyntaxTest   1  unencoded brackets over a real socket
 
 ```
 com.ata.jobdata
-├── web/      JobDataController · JobDataResponse · ApiExceptionHandler · WebConfig
-├── query/    JobField · FilterOperator · QueryParser · QueryParams · ApiException
-├── service/  JobDataService
-├── domain/   JobRecord
-└── data/     JobDataRepository · InMemoryJobDataRepository · RawJobRow · SalaryParser
+├── controller/  JobDataController · JobDataResponse
+├── config/      WebConfig
+├── exception/   ApiException · ApiExceptionHandler
+├── query/       JobField · FilterOperator · QueryParser · QueryParams
+├── service/     JobDataService
+├── model/       JobRecord
+└── repository/  JobDataRepository · InMemoryJobDataRepository · RawJobRow · SalaryParser
 ```
+
+`model/` has no `entity`/`dto` split: `JobRecord` is a plain record, not a JPA `@Entity` — there is no
+database — so a folder named `entity` would claim a mapping that does not exist.
 
 `RawJobRow` mirrors the spreadsheet exactly — string columns keyed by header — so the messy source
 format stops at the boundary and never reaches the API.
