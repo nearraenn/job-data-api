@@ -4,11 +4,9 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig implements WebMvcConfigurer {
+public class WebConfig {
 
     /**
      * Tomcat rejects a raw {@code [} or {@code ]} in a query string with 400 before the request ever
@@ -20,13 +18,5 @@ public class WebConfig implements WebMvcConfigurer {
     WebServerFactoryCustomizer<TomcatServletWebServerFactory> allowBracketsInQueryString() {
         return factory -> factory.addConnectorCustomizers(
                 connector -> connector.setProperty("relaxedQueryChars", "[]"));
-    }
-
-    /** Lets the frontend exercise call this API from a Vite/CRA dev server. */
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173", "http://localhost:3000")
-                .allowedMethods("GET");
     }
 }
