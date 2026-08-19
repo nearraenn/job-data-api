@@ -9,7 +9,7 @@ Java 21 · Spring Boot 3.5.3 · Maven
 
 ```bash
 ./mvnw spring-boot:run     # http://localhost:8080
-./mvnw test                # 68 tests
+./mvnw test                # 70 tests
 ```
 
 No database and no configuration — the dataset ships in `src/main/resources/data/`.
@@ -99,6 +99,32 @@ curl -g 'localhost:8080/api/job_data?years_of_experience[gt]=15&sort=salary&sort
 curl -g 'localhost:8080/api/job_data/1?fields=job_title,salary,salary_raw'
 ```
 
+## Project setup
+
+Generated with Spring Initializr, then trimmed. What was chosen, and what was deliberately left out:
+
+**Spring Boot 3.5.3, not the 4.1 Initializr offered.** `springdoc-openapi` — the OpenAPI/Swagger UI
+generator — only publishes 2.8.x, which targets Boot 3. Taking the newest version by default would
+have traded a working Swagger UI for a version number. Boot 3.5.x is also what most teams are
+actually running, so the reviewer's toolchain is more likely to match.
+
+**Two starters ticked: `web` and `validation`** — plus `springdoc-openapi` added by hand so the API
+is explorable without a REST client. Four dependencies total including `spring-boot-starter-test`;
+every one of them is called by code in this repo.
+
+**No Lombok.** Java `record` already gives immutable fields, accessors, `equals`/`hashCode` and
+`toString`, and it's a language feature rather than an annotation processor the IDE needs a plugin to
+understand. Ten record types across the codebase, no code generation.
+
+**No database.** The brief says "a static set of job data" — it never changes, so it is parsed once
+at startup and served from an immutable list. A schema, a migration tool and a running server would
+be setup cost for the reviewer with nothing bought in return. `JobDataService` still depends on the
+`JobDataRepository` interface, so the seam for a JPA implementation is there without the weight.
+
+**No `/v1/` prefix.** Versioning exists to protect deployed consumers from breaking changes; there
+are none here, and adding the prefix without a policy for what `v2` would mean is decoration. In
+production this would start versioned on day one.
+
 ## Design decisions
 
 ### The salary column is free text, so it is normalised at ingest
@@ -179,9 +205,10 @@ server on a real port for exactly that reason.
 ```
 SalaryParserTest         34  every input is a real value taken from the survey file
 QueryParserTest           8  bracket syntax, sort defaults, and each rejection path
-JobDataControllerTest     9  the brief's URLs end to end, plus null-last ordering and error bodies
+JobDataControllerTest    11  the brief's URLs end to end, plus null-last ordering, paging links, errors
 RawJobRowTest            15  years parsing: decimals preserved, negative sentinels rejected, raw kept
 BracketFilterSyntaxTest   1  unencoded brackets over a real socket
+JobDataApiApplicationTests 1 the context starts and the dataset loads
 ```
 
 ## Layout
