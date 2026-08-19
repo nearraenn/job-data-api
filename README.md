@@ -59,13 +59,18 @@ One record, and accepts `?fields=` too.
   "data": [
     { "job_title": "Software Developer", "gender": "Male", "salary": 122000 }
   ],
-  "meta": { "total": 1154, "page": 1, "size": 1, "total_pages": 1154 }
+  "pagination": {
+    "total": 1154, "page": 1, "size": 1, "total_pages": 1154,
+    "next": "http://localhost:8080/api/job_data?page=2", "prev": null
+  }
 }
 ```
 
 The envelope exists so a paginated response can report how many rows matched in total; a bare array
 cannot, and adding it later would break every client. With `fields=`, keys appear in the order asked
-for.
+for. `pagination.next`/`prev` are ready-to-fetch URLs carrying the same filter/sort/fields as the
+request that produced them — a client pages by following the link, not by rebuilding the query
+string itself. Either is `null` when there is no such page.
 
 Client errors return the same shape with a code you can branch on:
 

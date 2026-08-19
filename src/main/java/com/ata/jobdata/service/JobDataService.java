@@ -39,7 +39,7 @@ public class JobDataService {
                 .map(record -> project(record, params.fields()))
                 .toList();
 
-        return new JobDataResponse(data, JobDataResponse.Meta.of(matched.size(), params));
+        return new JobDataResponse(data, JobDataResponse.Pagination.of(matched.size(), params));
     }
 
     public Map<String, Object> findById(int id, List<JobField> fields) {

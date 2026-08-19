@@ -87,9 +87,28 @@ class JobDataControllerTest {
         mockMvc.perform(get("/api/job_data?gender=Female&size=5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(5))
-                .andExpect(jsonPath("$.meta.total").value(org.hamcrest.Matchers.greaterThan(5)))
-                .andExpect(jsonPath("$.meta.page").value(1))
-                .andExpect(jsonPath("$.meta.total_pages").value(org.hamcrest.Matchers.greaterThan(1)));
+                .andExpect(jsonPath("$.pagination.total").value(org.hamcrest.Matchers.greaterThan(5)))
+                .andExpect(jsonPath("$.pagination.page").value(1))
+                .andExpect(jsonPath("$.pagination.total_pages").value(org.hamcrest.Matchers.greaterThan(1)));
+    }
+
+    @Test
+    void firstPageHasNoPrevAndDoesHaveNext() throws Exception {
+        mockMvc.perform(get("/api/job_data?gender=Female&size=5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagination.prev").doesNotExist())
+                .andExpect(jsonPath("$.pagination.next", org.hamcrest.Matchers.containsString("page=2")))
+                .andExpect(jsonPath("$.pagination.next", org.hamcrest.Matchers.containsString("gender=Female")))
+                .andExpect(jsonPath("$.pagination.next", org.hamcrest.Matchers.containsString("size=5")));
+    }
+
+    @Test
+    void lastPageHasNoNext() throws Exception {
+        mockMvc.perform(get("/api/job_data?gender=Female&size=200"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagination.total_pages").value(1))
+                .andExpect(jsonPath("$.pagination.next").doesNotExist())
+                .andExpect(jsonPath("$.pagination.prev").doesNotExist());
     }
 
     @Test
