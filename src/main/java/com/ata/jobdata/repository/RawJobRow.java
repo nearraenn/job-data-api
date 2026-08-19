@@ -4,6 +4,9 @@ import com.ata.jobdata.model.JobRecord;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +35,11 @@ record RawJobRow(
      */
     private static final Pattern FIRST_NUMBER = Pattern.compile("-?\\d+(?:\\.\\d+)?");
 
+    /** Single-letter fields accept the source's unpadded month, day and hour ({@code 9/7/2016 5:14:48}). */
+    private static final DateTimeFormatter SOURCE_TIMESTAMP = DateTimeFormatter.ofPattern("M/d/yyyy H:m:s");
+    /** Fixed width on purpose — a padded ISO string is what makes string ordering chronological. */
+    private static final DateTimeFormatter ISO_TIMESTAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
     /** A row is worth keeping only if it says something about a job. */
     boolean isEmpty() {
         return isBlank(jobTitle) && isBlank(salary) && isBlank(gender) && isBlank(employer) && isBlank(location);
@@ -41,6 +49,7 @@ record RawJobRow(
         SalaryParser.Money money = SalaryParser.parse(salary);
         return new JobRecord(
                 id,
+                parseTimestamp(timestamp),
                 blankToNull(timestamp),
                 blankToNull(employer),
                 blankToNull(location),
@@ -57,6 +66,24 @@ record RawJobRow(
                 blankToNull(annualStockValue),
                 blankToNull(gender),
                 blankToNull(additionalComments));
+    }
+
+    /**
+     * The survey writes US-style {@code M/D/YYYY H:MM:SS} — every one of the 3,777 rows, no variants.
+     * That form sorts alphabetically by month, so {@code 1/10/2017} would come before {@code 3/21/2016}
+     * and the year barely counts at all; re-emitting it as fixed-width ISO-8601 makes lexicographic
+     * order chronological, which fixes sorting and makes range filters like
+     * {@code ?timestamp[gte]=2017-01-01} work without any date-aware comparison logic.
+     */
+    private static String parseTimestamp(String value) {
+        if (isBlank(value)) {
+            return null;
+        }
+        try {
+            return LocalDateTime.parse(value.trim(), SOURCE_TIMESTAMP).format(ISO_TIMESTAMP);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 
     /** Negative values are a "no answer" sentinel in this survey, not a real duration — null, not a sign flip. */

@@ -9,7 +9,7 @@ Java 21 · Spring Boot 3.5.3 · Maven
 
 ```bash
 ./mvnw spring-boot:run     # http://localhost:8080
-./mvnw test                # 70 tests
+./mvnw test                # 81 tests
 ```
 
 No database and no configuration — the dataset ships in `src/main/resources/data/`.
@@ -38,15 +38,15 @@ salary descending then job title ascending — a missing `sort_type` defaults to
 **Operators:** `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `like` (case-insensitive contains, strings only),
 `in` (comma-separated list).
 
-**Fields:** `id`, `timestamp`, `employer`, `location`, `job_title`, `years_at_employer`,
+**Fields:** `id`, `timestamp`, `timestamp_raw`, `employer`, `location`, `job_title`, `years_at_employer`,
 `years_at_employer_raw`, `years_of_experience`, `years_of_experience_raw`, `salary`,
 `salary_currency`, `salary_raw`, `signing_bonus`, `annual_bonus`, `annual_stock_value`, `gender`,
 `additional_comments`.
 
 Every field is filterable and sortable; string comparisons are case-insensitive throughout.
-`salary`, `years_at_employer` and `years_of_experience` are parsed from free text (see Design
-decisions below); `signing_bonus`, `annual_bonus` and `annual_stock_value` are not — they're kept as
-raw strings, so filtering them is a text comparison, not a numeric one.
+`salary`, `years_at_employer`, `years_of_experience` and `timestamp` are parsed from free text (see
+Design decisions below); `signing_bonus`, `annual_bonus` and `annual_stock_value` are not — they're
+kept as raw strings, so filtering them is a text comparison, not a numeric one.
 
 ### `GET /api/job_data/{id}`
 
@@ -165,6 +165,21 @@ decimals it just recovered. `years_at_employer_raw` / `years_of_experience_raw` 
 text the same way `salary_raw` does — so a sentinel like `"-9001"` still shows up somewhere even
 though it normalises to `null`.
 
+### Timestamps are re-emitted as ISO-8601, which is what makes sorting them mean anything
+
+The survey writes `3/21/2016 13:11:18` — US `M/D/YYYY`, consistently, in all 3,777 rows. Served as-is
+that string sorts alphabetically by month with the year trailing, so `?sort=timestamp` was returning
+nonsense: ascending began at `1/10/2017` rather than March 2016, and descending put `9/7/2016` ahead
+of `9/6/2017`. The data spans 2016 to 2020, so the year being ignored is not a corner case.
+
+Parsing once at ingest and re-emitting as fixed-width `2016-03-21T13:11:18` fixes it without any
+date-aware comparison logic, because ISO-8601 is designed so that lexicographic order *is*
+chronological order. Range filters come along for free — `?timestamp[gte]=2018-01-01&timestamp[lt]=2019-01-01`
+returns exactly the 43 rows from 2018 — even though the comparison underneath is still `String`.
+
+No time zone is attached. The source has none, and inventing one would be a guess dressed up as
+precision. `timestamp_raw` keeps the original text, as everywhere else.
+
 ### Missing values are unknown, not zero
 
 A row whose salary could not be parsed is not "less than 120000" — it is unknown, so following SQL's
@@ -206,7 +221,7 @@ server on a real port for exactly that reason.
 SalaryParserTest         34  every input is a real value taken from the survey file
 QueryParserTest           8  bracket syntax, sort defaults, and each rejection path
 JobDataControllerTest    11  the brief's URLs end to end, plus null-last ordering, paging links, errors
-RawJobRowTest            15  years parsing: decimals preserved, negative sentinels rejected, raw kept
+RawJobRowTest            26  timestamp to ISO, years decimals + negative sentinels, raw kept
 BracketFilterSyntaxTest   1  unencoded brackets over a real socket
 JobDataApiApplicationTests 1 the context starts and the dataset loads
 ```

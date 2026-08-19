@@ -22,6 +22,7 @@ public enum JobField {
 
     ID("id", Type.NUMBER, JobRecord::id),
     TIMESTAMP("timestamp", Type.STRING, JobRecord::timestamp),
+    TIMESTAMP_RAW("timestamp_raw", Type.STRING, JobRecord::timestampRaw),
     EMPLOYER("employer", Type.STRING, JobRecord::employer),
     LOCATION("location", Type.STRING, JobRecord::location),
     JOB_TITLE("job_title", Type.STRING, JobRecord::jobTitle),
