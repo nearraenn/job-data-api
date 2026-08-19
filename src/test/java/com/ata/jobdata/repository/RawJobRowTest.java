@@ -35,6 +35,14 @@ class RawJobRowTest {
                 .isNull();
     }
 
+    @ParameterizedTest(name = "\"{0}\" is preserved as the raw value even when unparsable")
+    @ValueSource(strings = {"18", "-16", "1 of employment"})
+    void rawTextSurvivesEvenWhenTheParsedValueIsNull(String raw) {
+        assertThat(record(raw).yearsAtEmployerRaw())
+                .as("normalising must never discard what the respondent actually typed")
+                .isEqualTo(raw);
+    }
+
     private static com.ata.jobdata.model.JobRecord record(String yearsAtEmployer) {
         RawJobRow row = new RawJobRow(
                 "3/21/16 12:54", "Employer", "City, ST", "Job Title",

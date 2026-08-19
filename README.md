@@ -9,7 +9,7 @@ Java 21 · Spring Boot 3.5.3 · Maven
 
 ```bash
 ./mvnw spring-boot:run     # http://localhost:8080
-./mvnw test                # 65 tests
+./mvnw test                # 68 tests
 ```
 
 No database and no configuration — the dataset ships in `src/main/resources/data/`.
@@ -39,8 +39,9 @@ salary descending then job title ascending — a missing `sort_type` defaults to
 `in` (comma-separated list).
 
 **Fields:** `id`, `timestamp`, `employer`, `location`, `job_title`, `years_at_employer`,
-`years_of_experience`, `salary`, `salary_currency`, `salary_raw`, `signing_bonus`, `annual_bonus`,
-`annual_stock_value`, `gender`, `additional_comments`.
+`years_at_employer_raw`, `years_of_experience`, `years_of_experience_raw`, `salary`,
+`salary_currency`, `salary_raw`, `signing_bonus`, `annual_bonus`, `annual_stock_value`, `gender`,
+`additional_comments`.
 
 Every field is filterable and sortable; string comparisons are case-insensitive throughout.
 `salary`, `years_at_employer` and `years_of_experience` are parsed from free text (see Design
@@ -129,7 +130,9 @@ Years at Employer alone) into `1`. Neither failure is loud — both produce a nu
 `RawJobRow.parseYears()` extracts a signed decimal instead and treats a negative result as unknown,
 mirroring `SalaryParser`'s "fail safe, not falsely confident" rule. `years_at_employer` and
 `years_of_experience` moved from `Integer` to `Double` so the fix doesn't quietly re-truncate the
-decimals it just recovered.
+decimals it just recovered. `years_at_employer_raw` / `years_of_experience_raw` carry the original
+text the same way `salary_raw` does — so a sentinel like `"-9001"` still shows up somewhere even
+though it normalises to `null`.
 
 ### Missing values are unknown, not zero
 
@@ -172,7 +175,7 @@ server on a real port for exactly that reason.
 SalaryParserTest         34  every input is a real value taken from the survey file
 QueryParserTest           8  bracket syntax, sort defaults, and each rejection path
 JobDataControllerTest     9  the brief's URLs end to end, plus null-last ordering and error bodies
-RawJobRowTest            12  years parsing: decimals preserved, negative sentinels rejected
+RawJobRowTest            15  years parsing: decimals preserved, negative sentinels rejected, raw kept
 BracketFilterSyntaxTest   1  unencoded brackets over a real socket
 ```
 
