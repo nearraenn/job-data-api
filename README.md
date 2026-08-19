@@ -9,7 +9,7 @@ Java 21 · Spring Boot 3.5.3 · Maven
 
 ```bash
 ./mvnw spring-boot:run     # http://localhost:8080
-./mvnw test                # 53 tests
+./mvnw test                # 65 tests
 ```
 
 No database and no configuration — the dataset ships in `src/main/resources/data/`.
@@ -43,6 +43,9 @@ salary descending then job title ascending — a missing `sort_type` defaults to
 `annual_stock_value`, `gender`, `additional_comments`.
 
 Every field is filterable and sortable; string comparisons are case-insensitive throughout.
+`salary`, `years_at_employer` and `years_of_experience` are parsed from free text (see Design
+decisions below); `signing_bonus`, `annual_bonus` and `annual_stock_value` are not — they're kept as
+raw strings, so filtering them is a text comparison, not a numeric one.
 
 ### `GET /api/job_data/{id}`
 
@@ -115,6 +118,19 @@ properly needs an FX rate table plus an as-of date per row, which is beyond a re
 `salary_currency` is returned and the client decides. The conversion would slot into `SalaryParser`
 at ingest without touching anything above it.
 
+### Years fields have the same free-text problem, at a smaller scale
+
+`Years at Employer` / `Years of Experience` are typed just as freely as Salary — `"18"`, `"1 of
+employment"`, `"1.5"`, `"<1"`, and occasionally `"-16"` or `"-1"` (a "no answer" sentinel, not a real
+duration). A naive `\d+` extraction breaks two ways: it strips the sign, turning a sentinel into a
+plausible-looking *positive* number, and it truncates decimals, turning `"1.5"` (140+ occurrences in
+Years at Employer alone) into `1`. Neither failure is loud — both produce a number that looks valid.
+
+`RawJobRow.parseYears()` extracts a signed decimal instead and treats a negative result as unknown,
+mirroring `SalaryParser`'s "fail safe, not falsely confident" rule. `years_at_employer` and
+`years_of_experience` moved from `Integer` to `Double` so the fix doesn't quietly re-truncate the
+decimals it just recovered.
+
 ### Missing values are unknown, not zero
 
 A row whose salary could not be parsed is not "less than 120000" — it is unknown, so following SQL's
@@ -156,6 +172,7 @@ server on a real port for exactly that reason.
 SalaryParserTest         34  every input is a real value taken from the survey file
 QueryParserTest           8  bracket syntax, sort defaults, and each rejection path
 JobDataControllerTest     9  the brief's URLs end to end, plus null-last ordering and error bodies
+RawJobRowTest            12  years parsing: decimals preserved, negative sentinels rejected
 BracketFilterSyntaxTest   1  unencoded brackets over a real socket
 ```
 
