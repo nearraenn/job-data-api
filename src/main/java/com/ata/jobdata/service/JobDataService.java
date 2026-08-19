@@ -1,6 +1,5 @@
 package com.ata.jobdata.service;
 
-import com.ata.jobdata.controller.JobDataResponse;
 import com.ata.jobdata.exception.ApiException;
 import com.ata.jobdata.model.JobRecord;
 import com.ata.jobdata.query.JobField;
@@ -24,7 +23,7 @@ public class JobDataService {
         this.repository = repository;
     }
 
-    public JobDataResponse query(QueryParams params) {
+    public PageResult query(QueryParams params) {
         Predicate<JobRecord> filter = filterOf(params);
         Comparator<JobRecord> sort = sortOf(params);
 
@@ -39,7 +38,7 @@ public class JobDataService {
                 .map(record -> project(record, params.fields()))
                 .toList();
 
-        return new JobDataResponse(data, JobDataResponse.Pagination.of(matched.size(), params));
+        return new PageResult(data, matched.size());
     }
 
     public Map<String, Object> findById(int id, List<JobField> fields) {

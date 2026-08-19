@@ -219,13 +219,19 @@ com.ata.jobdata
 ├── config/      WebConfig
 ├── exception/   ApiException · ApiExceptionHandler
 ├── query/       JobField · FilterOperator · QueryParser · QueryParams
-├── service/     JobDataService
+├── service/     JobDataService · PageResult
 ├── model/       JobRecord
 └── repository/  JobDataRepository · InMemoryJobDataRepository · RawJobRow · SalaryParser
 ```
 
+Imports only ever point inward — `controller` → `service` → `repository`, with `model`, `query` and
+`exception` shared beneath them. That is why `JobDataService` returns `PageResult` (rows plus a
+total) rather than `JobDataResponse`: the service says what was found, the controller decides how it
+looks on the wire and adds the paging links, which only it can build since only it sees the request
+URL. A service that returned the web DTO would make the inner layer depend on the outer one.
+
 `model/` has no `entity`/`dto` split: `JobRecord` is a plain record, not a JPA `@Entity` — there is no
 database — so a folder named `entity` would claim a mapping that does not exist.
 
-`RawJobRow` mirrors the spreadsheet exactly — string columns keyed by header — so the messy source
-format stops at the boundary and never reaches the API.
+`RawJobRow` and `SalaryParser` are package-private: the spreadsheet's shape and the free-text parsing
+it needs are `repository`'s problem, and nothing above it can reach them.

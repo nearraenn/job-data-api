@@ -19,10 +19,10 @@ import java.util.regex.Pattern;
  * detected currency is returned alongside the amount so a client can decide for itself; upgrade path
  * is to convert to a base currency here, at ingest, and keep the original in {@code salaryRaw}.
  */
-public final class SalaryParser {
+final class SalaryParser {
 
     /** Annual amount (null when the text holds no usable number) plus the ISO code we could detect. */
-    public record Money(Long amount, String currency) {}
+    record Money(Long amount, String currency) {}
 
     private static final Money NONE = new Money(null, null);
 
@@ -46,7 +46,7 @@ public final class SalaryParser {
 
     private SalaryParser() {}
 
-    public static Money parse(String raw) {
+    static Money parse(String raw) {
         if (raw == null || raw.isBlank()) {
             return NONE;
         }

@@ -4,6 +4,7 @@ import com.ata.jobdata.query.JobField;
 import com.ata.jobdata.query.QueryParams;
 import com.ata.jobdata.query.QueryParser;
 import com.ata.jobdata.service.JobDataService;
+import com.ata.jobdata.service.PageResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -52,12 +53,14 @@ public class JobDataController {
                     description = "Example filter. Operators: eq, ne, gt, gte, lt, lte, like, in")
     })
     public JobDataResponse list(@RequestParam Map<String, String> params, HttpServletRequest request) {
-        JobDataResponse response = service.query(QueryParser.parse(params));
-        JobDataResponse.Pagination pagination = response.pagination();
+        QueryParams query = QueryParser.parse(params);
+        PageResult result = service.query(query);
+
+        JobDataResponse.Pagination pagination = JobDataResponse.Pagination.of(result.total(), query);
         String next = pagination.page() < pagination.totalPages()
                 ? pageUrl(request, params, pagination.page() + 1) : null;
         String prev = pagination.page() > 1 ? pageUrl(request, params, pagination.page() - 1) : null;
-        return new JobDataResponse(response.data(), pagination.withLinks(next, prev));
+        return new JobDataResponse(result.data(), pagination.withLinks(next, prev));
     }
 
     /** Same filters/sort/fields as the current request, just a different page — nothing for the client to rebuild. */
