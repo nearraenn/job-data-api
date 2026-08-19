@@ -26,8 +26,11 @@ record RawJobRow(
         @JsonProperty("Gender") String gender,
         @JsonProperty("Additional Comments") String additionalComments) {
 
-    /** Years are typed as freely as salary is: "18", "1 of employment", "<1", "". */
-    private static final Pattern FIRST_INTEGER = Pattern.compile("\\d+");
+    /**
+     * Years are typed as freely as salary is: {@code "18"}, {@code "1 of employment"}, {@code "1.5"},
+     * {@code "<1"}, {@code "-16"} (a sentinel for "no answer", not a real value), {@code ""}.
+     */
+    private static final Pattern FIRST_NUMBER = Pattern.compile("-?\\d+(?:\\.\\d+)?");
 
     /** A row is worth keeping only if it says something about a job. */
     boolean isEmpty() {
@@ -42,8 +45,8 @@ record RawJobRow(
                 blankToNull(employer),
                 blankToNull(location),
                 blankToNull(jobTitle),
-                firstInteger(yearsAtEmployer),
-                firstInteger(yearsOfExperience),
+                parseYears(yearsAtEmployer),
+                parseYears(yearsOfExperience),
                 money.amount(),
                 money.currency(),
                 blankToNull(salary),
@@ -54,12 +57,17 @@ record RawJobRow(
                 blankToNull(additionalComments));
     }
 
-    private static Integer firstInteger(String value) {
+    /** Negative values are a "no answer" sentinel in this survey, not a real duration — null, not a sign flip. */
+    private static Double parseYears(String value) {
         if (isBlank(value)) {
             return null;
         }
-        Matcher m = FIRST_INTEGER.matcher(value);
-        return m.find() ? Integer.valueOf(m.group()) : null;
+        Matcher m = FIRST_NUMBER.matcher(value);
+        if (!m.find()) {
+            return null;
+        }
+        double years = Double.parseDouble(m.group());
+        return years < 0 ? null : years;
     }
 
     /** Empty strings become nulls so "missing" is one concept everywhere: in sorting, filtering and JSON. */
