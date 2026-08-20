@@ -16,8 +16,11 @@ No database and no configuration — the dataset ships in `src/main/resources/da
 
 Swagger UI: <http://localhost:8080/swagger-ui.html>
 
-> **Use `curl -g`.** curl reads `[` and `]` as glob ranges, so `curl -g '...salary[gte]=120000'`
-> (or percent-encoding as `%5Bgte%5D`) is needed. Browsers and HTTP clients send them as-is.
+> **Two curl-only notes.** curl reads `[` and `]` as glob ranges, so `curl -g '...salary[gte]=120000'`
+> (or percent-encoding as `%5Bgte%5D`) is needed — browsers and HTTP clients send them as-is. And a
+> literal space in a URL makes curl refuse to send the request at all (`URL rejected: Malformed input
+> to a URL function`), so values with spaces need `%20` or `+`: `job_title=Software%20Engineer`.
+> Neither is a limitation of the API — both `%20` and `+` decode to a space server-side.
 
 ## Endpoints
 
@@ -98,7 +101,7 @@ and they compose:
 
 ```bash
 curl -g 'localhost:8080/api/job_data?salary[gte]=120000'          # 1154 rows — the brief's own example
-curl -g 'localhost:8080/api/job_data?job_title=Software Engineer' # 642 — exact match, case-insensitive
+curl -g 'localhost:8080/api/job_data?job_title=Software%20Engineer' # 642 — exact match, case-insensitive
 curl -g 'localhost:8080/api/job_data?job_title[like]=engineer'    # 1635 — substring match
 curl -g 'localhost:8080/api/job_data?gender=Female'               # 175
 
