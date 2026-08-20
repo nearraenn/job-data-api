@@ -9,7 +9,7 @@ Java 21 · Spring Boot 3.5.3 · Maven
 
 ```bash
 ./mvnw spring-boot:run     # http://localhost:8080
-./mvnw test                # 81 tests
+./mvnw test                # 83 tests
 ```
 
 No database and no configuration — the dataset ships in `src/main/resources/data/`.
@@ -220,7 +220,7 @@ server on a real port for exactly that reason.
 ```
 SalaryParserTest         34  every input is a real value taken from the survey file
 QueryParserTest           8  bracket syntax, sort defaults, and each rejection path
-JobDataControllerTest    11  the brief's URLs end to end, plus null-last ordering, paging links, errors
+JobDataControllerTest    13  the brief's URLs end to end, plus ordering, paging bounds, errors
 RawJobRowTest            26  timestamp to ISO, years decimals + negative sentinels, raw kept
 BracketFilterSyntaxTest   1  unencoded brackets over a real socket
 JobDataApiApplicationTests 1 the context starts and the dataset loads

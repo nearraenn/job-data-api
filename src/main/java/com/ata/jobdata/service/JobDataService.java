@@ -32,8 +32,11 @@ public class JobDataService {
             matched = matched.stream().sorted(sort).toList();
         }
 
-        int from = Math.min((params.page() - 1) * params.size(), matched.size());
-        int to = Math.min(from + params.size(), matched.size());
+        // In long: page * size exceeds int for a far-past-the-end page, and wrapping negative used to
+        // reach subList as a negative fromIndex. Both bounds are clamped to the match count, so the
+        // narrowing back to int is safe.
+        int from = (int) Math.min((long) (params.page() - 1) * params.size(), matched.size());
+        int to = (int) Math.min((long) from + params.size(), matched.size());
         List<Map<String, Object>> data = matched.subList(from, to).stream()
                 .map(record -> project(record, params.fields()))
                 .toList();

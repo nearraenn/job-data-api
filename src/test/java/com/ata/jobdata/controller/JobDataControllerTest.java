@@ -120,6 +120,22 @@ class JobDataControllerTest {
     }
 
     @Test
+    void aPageFarPastTheEndIsEmptyRatherThanAnOverflowCrash() throws Exception {
+        // (page - 1) * size exceeds Integer.MAX_VALUE here; in int it wrapped negative and subList threw
+        mockMvc.perform(get("/api/job_data?page=11000001&size=200"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(0))
+                .andExpect(jsonPath("$.pagination.total").value(org.hamcrest.Matchers.greaterThan(0)));
+    }
+
+    @Test
+    void rejectsAPageSizeOverTheCapWith400() throws Exception {
+        mockMvc.perform(get("/api/job_data?size=201"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_PARAMETER"));
+    }
+
+    @Test
     void rejectsAnUnknownFilterFieldWith400() throws Exception {
         mockMvc.perform(get("/api/job_data?salaryy[gte]=1"))
                 .andExpect(status().isBadRequest())
