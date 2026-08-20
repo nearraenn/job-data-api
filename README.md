@@ -81,21 +81,76 @@ Client errors return the same shape with a code you can branch on:
 `UNKNOWN_FIELD` · `UNKNOWN_OPERATOR` · `UNSUPPORTED_OPERATOR` · `INVALID_VALUE` · `INVALID_SORT` ·
 `INVALID_SORT_TYPE` · `INVALID_PARAMETER` · `MISSING_VALUE` → **400**, `RECORD_NOT_FOUND` → **404**.
 
-## Examples
+## Verifying the brief
+
+One command per line of the user story, with what it should return. Counts are against the shipped
+dataset of 3,776 rows, so they are reproducible.
+
+**List job data via API GET request**
 
 ```bash
-# the three requirements from the brief
-curl -g 'localhost:8080/api/job_data?salary[gte]=120000'
-curl -g 'localhost:8080/api/job_data?fields=job_title,gender,salary'
-curl -g 'localhost:8080/api/job_data?sort=job_title&sort_type=DESC'
+curl -g 'localhost:8080/api/job_data'
+```
+`pagination.total` is 3776, and `data` holds the first 50 rows.
 
-# all of them at once
+**Filter by one or more fields** — the brief names job title, salary and gender; each works alone,
+and they compose:
+
+```bash
+curl -g 'localhost:8080/api/job_data?salary[gte]=120000'          # 1154 rows — the brief's own example
+curl -g 'localhost:8080/api/job_data?job_title=Software Engineer' # 642 — exact match, case-insensitive
+curl -g 'localhost:8080/api/job_data?job_title[like]=engineer'    # 1635 — substring match
+curl -g 'localhost:8080/api/job_data?gender=Female'               # 175
+
+# "one or more": all three at once, ANDed
+curl -g 'localhost:8080/api/job_data?job_title[like]=engineer&gender=Female&salary[gte]=100000'
+# 37 rows
+```
+
+The 1154 rows above are the real check on filtering: they include values the source wrote as
+`$120,000`, `135k` and `SEK 380000`, not just the ones typed as bare digits.
+
+**Filter by a sparse fields/attributes**
+
+```bash
+curl -g 'localhost:8080/api/job_data?fields=job_title,gender,salary'
+```
+```json
+{"job_title": "Software Developer", "gender": "Male", "salary": 122000}
+```
+Only those keys, in the order requested — reorder the parameter and the JSON keys reorder with it.
+
+**Sort by one or more fields**
+
+```bash
+curl -g 'localhost:8080/api/job_data?sort=job_title&sort_type=DESC'
+```
+Descending across the whole Unicode range, so the first page is CJK job titles (`프로그래머`) rather
+than `Z…` — correct, if surprising at a glance.
+
+```bash
+# "one or more": salary descending, ties broken by job title ascending
+curl -g 'localhost:8080/api/job_data?salary=100000&sort=salary,job_title&sort_type=DESC,ASC&fields=salary,job_title'
+```
+```
+100000   Android Developer (Soft Eng II)
+100000   Application Developer
+100000   Architect
+100000   asd
+```
+Every salary is equal here, so the second key is visibly doing the ordering.
+
+## More examples
+
+```bash
+# everything at once, paginated
 curl -g 'localhost:8080/api/job_data?salary[gte]=100000&salary[lte]=150000&gender=Female\
 &job_title[like]=engineer&fields=job_title,salary,gender&sort=salary&sort_type=DESC&size=10'
 
 # other operators
 curl -g 'localhost:8080/api/job_data?gender[in]=Female,Male&job_title[like]=data%20scientist'
 curl -g 'localhost:8080/api/job_data?years_of_experience[gt]=15&sort=salary&sort_type=DESC'
+curl -g 'localhost:8080/api/job_data?timestamp[gte]=2018-01-01&timestamp[lt]=2019-01-01'  # 43 rows
 curl -g 'localhost:8080/api/job_data/1?fields=job_title,salary,salary_raw'
 ```
 
